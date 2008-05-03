@@ -78,6 +78,13 @@ module Graphtunes
       order
     end
     
+    def order_tracks(tracks, order)
+      ordered = []
+      order.each do |i|
+        ordered.push(tracks[i])
+      end
+      ordered
+    end
     
     private
     

@@ -385,4 +385,35 @@ describe Graphtunes do
       Graphtunes.get_track_order(@data).should == ['1234', '12345', '123']
     end
   end
+  
+  it 'should order the tracks' do
+    Graphtunes.should respond_to(:order_tracks)
+  end
+  
+  describe 'ordering tracks' do
+    before :each do
+      @vals = Array.new(6) { |i|  stub("track #{i}") }
+      @tracks = {}
+      1.upto(5) do |i|
+        @tracks[i.to_s] = @vals[i]
+      end
+      @order  = ['5', '3', '2', '4', '1']
+    end
+    
+    it 'should require tracks' do
+      lambda { Graphtunes.order_tracks }.should raise_error(ArgumentError)
+    end
+    
+    it 'should require order' do
+      lambda { Graphtunes.order_tracks(@tracks) }.should raise_error(ArgumentError)
+    end
+    
+    it 'should accept tracks and order' do
+      lambda { Graphtunes.order_tracks(@tracks, @order) }.should_not raise_error(ArgumentError)
+    end
+    
+    it 'should return the tracks in the specified order' do
+      Graphtunes.order_tracks(@tracks, @order).should == @vals.values_at(5,3,2,4,1)
+    end
+  end
 end
