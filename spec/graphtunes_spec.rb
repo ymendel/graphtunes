@@ -126,7 +126,7 @@ describe Graphtunes do
     end
     
     it 'should get the track ordering' do
-      Graphtunes.expects(:get_track_order)
+      Graphtunes.expects(:get_track_order)  # NOTE: should make sure the right data is being passed
       Graphtunes.get_track_list(@data)
     end
     
@@ -332,6 +332,57 @@ describe Graphtunes do
       ]
       @data = get_track_data(input)
       Graphtunes.extract_track_data(@data).should_not include('BPM')
+    end
+  end
+  
+  it 'should get the track ordering' do
+    Graphtunes.should respond_to(:get_track_order)
+  end
+  
+  describe 'getting the track order' do
+    before :each do
+      input = %q[
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+          <key>Tracks</key>
+          <dict>
+          </dict>
+          <key>Playlists</key>
+          <array>
+            <dict>
+              <key>Name</key><string>Some Playlist</string>
+              <key>Playlist Items</key>
+              <array>
+                <dict>
+                  <key>Track ID</key><integer>1234</integer>
+                </dict>
+                <dict>
+                  <key>Track ID</key><integer>12345</integer>
+                </dict>
+                <dict>
+                  <key>Track ID</key><integer>123</integer>
+                </dict>
+              </array>
+            </dict>
+          </array>
+        </dict>
+        </plist>
+      ]
+      @data = REXML::Document.new(input)
+    end
+    
+    it 'should require data' do
+      lambda { Graphtunes.get_track_order }.should raise_error(ArgumentError)
+    end
+    
+    it 'should accept data' do
+      lambda { Graphtunes.get_track_order(@data) }.should_not raise_error(ArgumentError)
+    end
+    
+    it 'should return the order' do
+      Graphtunes.get_track_order(@data).should == ['1234', '12345', '123']
     end
   end
 end

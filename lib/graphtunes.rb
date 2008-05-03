@@ -23,7 +23,7 @@ module Graphtunes
       raise 'No track list information found' unless track_list
       
       tracks = get_tracks(track_list)
-      order  = get_track_order
+      order  = get_track_order(doc)
       order_tracks(tracks, order)
     end
     
@@ -48,6 +48,34 @@ module Graphtunes
         end
       end
       track_data
+    end
+    
+    def get_track_order(data)
+      playlists = nil
+      data.elements.each('plist/dict/key') do |el|
+        if el.text == 'Playlists'
+          playlists = el.next_element
+        end
+      end
+      
+      items = nil
+      playlists.elements.each('dict/key') do |el|
+        if el.text == 'Playlist Items'
+          items = el.next_element
+        end
+      end
+      
+      order = []
+      
+      items.elements.each('dict') do |dict|
+        dict.elements.each('key') do |key|
+          if key.text == 'Track ID'
+            order.push(key.next_element.text)
+          end
+        end
+      end
+      
+      order
     end
     
     
