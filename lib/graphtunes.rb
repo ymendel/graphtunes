@@ -26,5 +26,15 @@ module Graphtunes
       order  = get_track_order
       order_tracks(tracks, order)
     end
+    
+    def get_tracks(data)
+      track_data = {}
+      data.elements.each('key') do |key|
+        track_id = key.text
+        track = key.next_element
+        track_data[track_id] = extract_track_data(track)
+      end
+      track_data
+    end
   end
 end

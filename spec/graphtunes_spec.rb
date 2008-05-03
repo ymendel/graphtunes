@@ -121,7 +121,7 @@ describe Graphtunes do
     end
     
     it 'should get the tracks' do
-      Graphtunes.expects(:get_tracks)
+      Graphtunes.expects(:get_tracks)  # NOTE: should make sure the right data is being passed
       Graphtunes.get_track_list(@data)
     end
     
@@ -139,6 +139,108 @@ describe Graphtunes do
       ordered = stub('ordered tracks')
       Graphtunes.stubs(:order_tracks).returns(ordered)
       Graphtunes.get_track_list(@data).should == ordered
+    end
+  end
+  
+  it 'should get tracks' do
+    Graphtunes.should respond_to(:get_tracks)
+  end
+  
+  describe 'getting tracks' do
+    before :each do
+      @key = '1234'
+      input = %Q[
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+          <key>Major Version</key><integer>1</integer>
+          <key>Tracks</key>
+          <dict>
+            <key>#{@key}</key>
+            <dict>
+              <key>Track ID</key><integer>#{@key}</integer>
+            </dict>
+          </dict>
+        </dict>
+        </plist>
+      ]
+      @data = get_track_list(input)
+    end
+    
+    # this is ugly, but I'm not sure of a better way to do this without crazy-intensive implementation-specific stubbing
+    def get_track_list(data)
+      doc = REXML::Document.new(data)
+      track_list = nil
+      doc.elements.each('plist/dict/key') do |el|
+        if el.text == 'Tracks'
+          track_list = el.next_element
+        end
+      end
+      track_list
+    end
+    
+    it 'should require data' do
+      lambda { Graphtunes.get_tracks }.should raise_error(ArgumentError)
+    end
+    
+    it 'should accept data' do
+      lambda { Graphtunes.get_tracks(@data) }.should_not raise_error(ArgumentError)
+    end
+    
+    it 'should extract track data' do
+      Graphtunes.expects(:extract_track_data) # NOTE: should make sure the right data is being passed
+      Graphtunes.get_tracks(@data)
+    end
+    
+    it 'should return the extracted track data' do
+      val = stub('extracted track data')
+      Graphtunes.expects(:extract_track_data).returns(val)
+      Graphtunes.get_tracks(@data)[@key].should == val
+    end
+    
+    it 'should extract track data for each track' do
+      input = %q[
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+          <key>Major Version</key><integer>1</integer>
+          <key>Tracks</key>
+          <dict>
+            <key>1234</key>
+            <dict>
+              <key>Track ID</key><integer>1234</integer>
+            </dict>
+            <key>12345</key>
+            <dict>
+              <key>Track ID</key><integer>12345</integer>
+            </dict>
+          </dict>
+        </dict>
+        </plist>
+      ]
+      @data = get_track_list(input)
+      Graphtunes.expects(:extract_track_data).times(2)  # NOTE: should make sure the right data is being passed
+      Graphtunes.get_tracks(@data)
+    end
+    
+    it 'should not extract track data if there are no tracks' do
+      input = %q[
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+          <key>Major Version</key><integer>1</integer>
+          <key>Tracks</key>
+          <dict>
+          </dict>
+        </dict>
+        </plist>
+      ]
+      @data = get_track_list(input)
+      Graphtunes.expects(:extract_track_data).never
+      Graphtunes.get_tracks(@data)
     end
   end
 end
