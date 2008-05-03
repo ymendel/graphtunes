@@ -54,6 +54,7 @@ describe Graphtunes do
         <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
         <dict>
+          <key>Major Version</key><integer>1</integer>
           <key>Tracks</key>
       	  <dict>
           </dict>
@@ -94,6 +95,7 @@ describe Graphtunes do
         <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
         <dict>
+          <key>Major Version</key><integer>1</integer>
           <key>Tracks</key>
         </dict>
         </plist>
@@ -108,6 +110,7 @@ describe Graphtunes do
         <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
         <dict>
+          <key>Major Version</key><integer>1</integer>
           <key>Tracks</key>
       	  <dict>
           </dict>
