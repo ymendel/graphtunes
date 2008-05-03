@@ -2,9 +2,15 @@ $:.unshift(File.dirname(__FILE__)) unless
   $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
 
 require 'rexml/document'
+require 'gruff'
 
 module Graphtunes
   class << self
+    def process(file)
+      data = import(file)
+      graph(data, file.chomp('.xml') + '.png')
+    end
+    
     def import(file)
       raise TypeError, "'#{file}' is not a file" unless File.file?(file)
       get_track_list(File.read(file))
@@ -84,6 +90,13 @@ module Graphtunes
         ordered.push(tracks[i])
       end
       ordered
+    end
+    
+    def graph(data, file)
+      graph = Gruff::Line.new
+      graph.data('BPM', data.collect { |t|  t['BPM'] })
+      graph.hide_dots = true
+      graph.write(file)
     end
     
     private

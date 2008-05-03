@@ -1,6 +1,49 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
 
 describe Graphtunes do
+  it 'should process' do
+    Graphtunes.should respond_to(:process)
+  end
+  
+  describe 'processing' do
+    before :each do
+      @filename = 'blah'
+      @data = stub('imported data')
+      Graphtunes.stubs(:import).returns(@data)
+      Graphtunes.stubs(:graph)
+    end
+    
+    it 'should require a filename' do
+      lambda { Graphtunes.process }.should raise_error(ArgumentError)
+    end
+    
+    it 'should accept a filename' do
+      lambda { Graphtunes.process(@filename) }.should_not raise_error(ArgumentError)
+    end
+    
+    it 'should import data from the file' do
+      Graphtunes.expects(:import).with(@filename)
+      Graphtunes.process(@filename)
+    end
+    
+    it 'should graph the imported data' do
+      Graphtunes.expects(:graph).with(@data, anything)
+      Graphtunes.process(@filename)
+    end
+    
+    it "should create an output filename that replaces the input filename's .xml extension with .png" do
+      @filename = 'testing.xml'
+      Graphtunes.expects(:graph).with(@data, 'testing.png')
+      Graphtunes.process(@filename)
+    end
+    
+    it "should create an output filename that appends .png to the input filename if it has no .xml extension" do
+      @filename = 'testblah'
+      Graphtunes.expects(:graph).with(@data, 'testblah.png')
+      Graphtunes.process(@filename)
+    end
+  end
+  
   it 'should import data' do
     Graphtunes.should respond_to(:import)
   end
@@ -414,6 +457,62 @@ describe Graphtunes do
     
     it 'should return the tracks in the specified order' do
       Graphtunes.order_tracks(@tracks, @order).should == @vals.values_at(5,3,2,4,1)
+    end
+  end
+  
+  it 'should graph the data' do
+    Graphtunes.should respond_to(:graph)
+  end
+  
+  describe 'graphing the data' do
+    before :each do
+      @data = [
+        { 'BPM' => 5 },
+        { 'BPM' => 4 },
+        { 'BPM' => 6 },
+        { 'BPM' => 1 },
+        { 'BPM' => 2 }
+      ]
+      @filename = 'outfile.png'
+      @graph = stub('graph', :data => nil, :hide_dots= => nil, :write => nil)
+      Gruff::Line.stubs(:new).returns(@graph)
+    end
+    
+    it 'should require data' do
+      lambda { Graphtunes.graph }.should raise_error(ArgumentError)
+    end
+    
+    it 'should require a filename' do
+      lambda { Graphtunes.graph(@data) }.should raise_error(ArgumentError)
+    end
+    
+    it 'should accept data and a filename' do
+      lambda { Graphtunes.graph(@data, @filename) }.should_not raise_error(ArgumentError)
+    end
+    
+    it 'should create a line graph' do
+      Gruff::Line.expects(:new).returns(@graph)
+      Graphtunes.graph(@data, @filename)
+    end
+    
+    it 'should create a line for the BPMs' do
+      @graph.expects(:data).with('BPM', [5, 4, 6, 1, 2])
+      Graphtunes.graph(@data, @filename)
+    end
+    
+    it 'should hide dots' do
+      @graph.expects(:hide_dots=).with(true)
+      Graphtunes.graph(@data, @filename)
+    end
+    
+    it 'should output the graph' do
+      @graph.expects(:write)
+      Graphtunes.graph(@data, @filename)
+    end
+    
+    it 'should use the supplied filename for graph output' do
+      @graph.expects(:write).with(@filename)
+      Graphtunes.graph(@data, @filename)
     end
   end
 end
