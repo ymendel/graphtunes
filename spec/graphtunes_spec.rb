@@ -11,7 +11,7 @@ describe Graphtunes do
       File.stubs(:file?).returns(true)
       @data = stub('file data')
       File.stubs(:read).with(@filename).returns(@data)
-      Graphtunes.stubs(:get_tracks)
+      Graphtunes.stubs(:get_track_list)
     end
     
     it 'should require a filename' do
@@ -37,17 +37,17 @@ describe Graphtunes do
       Graphtunes.import(@filename)
     end
     
-    it 'should get the track information from the file' do
-      Graphtunes.expects(:get_tracks).with(@data)
+    it 'should get the track list from the file' do
+      Graphtunes.expects(:get_track_list).with(@data)
       Graphtunes.import(@filename)
     end
   end
   
-  it 'should get track information' do
-    Graphtunes.should respond_to(:get_tracks)
+  it 'should get the track list' do
+    Graphtunes.should respond_to(:get_track_list)
   end
   
-  describe 'getting track information' do
+  describe 'getting the track list' do
     before :each do
       @data = %q[
         <?xml version="1.0" encoding="UTF-8"?>
@@ -60,15 +60,19 @@ describe Graphtunes do
         </dict>
         </plist>
       ]
-      Graphtunes.stubs(:get_track_list)
+      @tracks = stub('tracks')
+      Graphtunes.stubs(:get_tracks).returns(@tracks)
+      @order = stub('order')
+      Graphtunes.stubs(:get_track_order).returns(@order)
+      Graphtunes.stubs(:order_tracks)
     end
     
     it 'should require data' do
-      lambda { Graphtunes.get_tracks }.should raise_error(ArgumentError)
+      lambda { Graphtunes.get_track_list }.should raise_error(ArgumentError)
     end
     
     it 'should accept data' do
-      lambda { Graphtunes.get_tracks(@data) }.should_not raise_error(ArgumentError)
+      lambda { Graphtunes.get_track_list(@data) }.should_not raise_error(ArgumentError)
     end
     
     it 'should require there to be a notifier of track data' do
@@ -81,7 +85,7 @@ describe Graphtunes do
         </dict>
         </plist>
       ]
-      lambda { Graphtunes.get_tracks(@data) }.should raise_error
+      lambda { Graphtunes.get_track_list(@data) }.should raise_error
     end
     
     it 'should require there to be track data' do
@@ -94,7 +98,7 @@ describe Graphtunes do
         </dict>
         </plist>
       ]
-      lambda { Graphtunes.get_tracks(@data) }.should raise_error
+      lambda { Graphtunes.get_track_list(@data) }.should raise_error
     end
     
     
@@ -110,12 +114,28 @@ describe Graphtunes do
         </dict>
         </plist>
       ]
-      lambda { Graphtunes.get_tracks(@data) }.should_not raise_error
+      lambda { Graphtunes.get_track_list(@data) }.should_not raise_error
     end
     
-    it 'should get the track list' do
-      Graphtunes.expects(:get_track_list)
-      Graphtunes.get_tracks(@data)
+    it 'should get the tracks' do
+      Graphtunes.expects(:get_tracks)
+      Graphtunes.get_track_list(@data)
+    end
+    
+    it 'should get the track ordering' do
+      Graphtunes.expects(:get_track_order)
+      Graphtunes.get_track_list(@data)
+    end
+    
+    it 'should order the tracks' do
+      Graphtunes.expects(:order_tracks).with(@tracks, @order)
+      Graphtunes.get_track_list(@data)
+    end
+    
+    it 'should return the ordered tracks' do
+      ordered = stub('ordered tracks')
+      Graphtunes.stubs(:order_tracks).returns(ordered)
+      Graphtunes.get_track_list(@data).should == ordered
     end
   end
 end

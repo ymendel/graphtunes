@@ -7,22 +7,24 @@ module Graphtunes
   class << self
     def import(file)
       raise TypeError, "'#{file}' is not a file" unless File.file?(file)
-      get_tracks(File.read(file))
+      get_track_list(File.read(file))
     end
     
-    def get_tracks(data)
+    def get_track_list(data)
       doc = REXML::Document.new(data)
       
-      tracks = nil
+      track_list = nil
       doc.elements.each('plist/dict/key') do |el|
         if el.text == 'Tracks'
-          tracks = el.next_element
+          track_list = el.next_element
         end
       end
       
-      raise 'No track information found' unless tracks
+      raise 'No track list information found' unless track_list
       
-      get_track_list(tracks)
+      tracks = get_tracks(track_list)
+      order  = get_track_order
+      order_tracks(tracks, order)
     end
   end
 end
