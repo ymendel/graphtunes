@@ -36,5 +36,25 @@ module Graphtunes
       end
       track_data
     end
+    
+    def extract_track_data(data)
+      track_data = {}
+      data.elements.each('key') do |key|
+        field = key.text
+        if extraction_fields.include?(field)
+          value = key.next_element.text
+          value = value.to_i if field == 'BPM'
+          track_data[field] = value
+        end
+      end
+      track_data
+    end
+    
+    
+    private
+    
+    def extraction_fields
+      ['Track ID', 'Name', 'Artist', 'Album', 'BPM']
+    end
   end
 end

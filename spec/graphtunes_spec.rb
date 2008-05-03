@@ -212,4 +212,126 @@ describe Graphtunes do
       Graphtunes.get_tracks(@data)
     end
   end
+  
+  it 'should extract track data' do
+    Graphtunes.should respond_to(:extract_track_data)
+  end
+  
+  describe 'extracting track data' do
+    before :each do
+      @id     = '1234'
+      @name   = 'track name'
+      @artist = 'track artist'
+      @album  = 'track album'
+      @bpm    = 50
+      
+      input = %Q[
+        <dict>
+          <key>Track ID</key><integer>#{@id}</integer>
+          <key>Name</key><string>#{@name}</string>
+          <key>Artist</key><string>#{@artist}</string>
+          <key>Album</key><string>#{@album}</string>
+          <key>BPM</key><integer>#{@bpm}</integer>
+        </dict>
+      ]
+      @data = get_track_data(input)
+    end
+    
+    def get_track_data(data)
+      REXML::Document.new(data).root
+    end
+    
+    it 'should require data' do
+      lambda { Graphtunes.extract_track_data }.should raise_error(ArgumentError)
+    end
+    
+    it 'should accept data' do
+      lambda { Graphtunes.extract_track_data(@data) }.should_not raise_error(ArgumentError)
+    end
+    
+    it 'should extract the track ID if present' do
+      Graphtunes.extract_track_data(@data)['Track ID'].should == @id
+    end
+    
+    it 'should not bother with the track ID if absent' do
+      input = %Q[
+        <dict>
+          <key>Name</key><string>#{@name}</string>
+          <key>Artist</key><string>#{@artist}</string>
+          <key>Album</key><string>#{@album}</string>
+          <key>BPM</key><integer>#{@bpm}</integer>
+        </dict>
+      ]
+      @data = get_track_data(input)
+      Graphtunes.extract_track_data(@data).should_not include('Track ID')
+    end
+    
+    it 'should extract the track name if present' do
+      Graphtunes.extract_track_data(@data)['Name'].should == @name
+    end
+    
+    it 'should not bother with the track name if absent' do
+      input = %Q[
+        <dict>
+          <key>Track ID</key><integer>#{@id}</integer>
+          <key>Artist</key><string>#{@artist}</string>
+          <key>Album</key><string>#{@album}</string>
+          <key>BPM</key><integer>#{@bpm}</integer>
+        </dict>
+      ]
+      @data = get_track_data(input)
+      Graphtunes.extract_track_data(@data).should_not include('Name')
+    end
+    
+    it 'should extract the track artist if present' do
+      Graphtunes.extract_track_data(@data)['Artist'].should == @artist
+    end
+    
+    it 'should not bother with the track artist if absent' do
+      input = %Q[
+        <dict>
+          <key>Track ID</key><integer>#{@id}</integer>
+          <key>Name</key><string>#{@name}</string>
+          <key>Album</key><string>#{@album}</string>
+          <key>BPM</key><integer>#{@bpm}</integer>
+        </dict>
+      ]
+      @data = get_track_data(input)
+      Graphtunes.extract_track_data(@data).should_not include('Artist')
+    end
+    
+    it 'should extract the track album if present' do
+      Graphtunes.extract_track_data(@data)['Album'].should == @album
+    end
+    
+    it 'should not bother with the track album if absent' do
+      input = %Q[
+        <dict>
+          <key>Track ID</key><integer>#{@id}</integer>
+          <key>Name</key><string>#{@name}</string>
+          <key>Artist</key><string>#{@artist}</string>
+          <key>BPM</key><integer>#{@bpm}</integer>
+        </dict>
+      ]
+      @data = get_track_data(input)
+      Graphtunes.extract_track_data(@data).should_not include('Album')
+    end
+    
+    it 'should extract the track BPM if present' do
+      Graphtunes.extract_track_data(@data)['BPM'].should == @bpm
+    end
+    
+    it 'should not bother with the track BPM if absent' do
+      input = %Q[
+        <dict>
+          <key>Track ID</key><integer>#{@id}</integer>
+          <key>Name</key><string>#{@name}</string>
+          <key>Artist</key><string>#{@artist}</string>
+          <key>Album</key><string>#{@album}</string>
+        </dict>
+      ]
+      @data = get_track_data(input)
+      Graphtunes.extract_track_data(@data).should_not include('BPM')
+    end
+  end
 end
