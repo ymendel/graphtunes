@@ -3,6 +3,7 @@ License.txt
 Manifest.txt
 README.txt
 Rakefile
+bin/graphtunes
 config/hoe.rb
 config/requirements.rb
 lib/graphtunes.rb
@@ -11,6 +12,7 @@ script/console
 script/destroy
 script/generate
 setup.rb
+spec/graphtunes_command_spec.rb
 spec/graphtunes_spec.rb
 spec/spec.opts
 spec/spec_helper.rb
